@@ -1,0 +1,10 @@
+access-key        = "[Insert access key]"
+secret-key        = "[Insert secret key]"
+region            = "[Enter AWS region to create the nodes in]"
+availability-zone = "[Enter  AWS AZ to create nodes in]"
+node-count        =  [Enter  number of nodes to create]
+ami-name          = "[Enter name of AMI image to be used]"
+instance-type     = "[Enter Instance Type to use for the nodes]"
+subnet-id         = "[Enter subnet id of the subnet to which the nodes should be connected]"
+public-key-file   = "[Enter path (on the local machine) to the public key to be inserted into the nodes]"
+ao-host-ip        = "[Enter an external IP address from which SSH to nodes will be allowed. SSH to the nodes will only be allowed from this IP.]"

@@ -1,0 +1,115 @@
+---
+- hosts: localhost
+
+- hosts: masters
+  #strategy: free
+  remote_user: ubuntu
+  become: true
+  tasks:
+  - name: update /etc/hosts
+    template:
+       src: ~/ansible/templates/etc_hosts.j2
+       dest: /etc/hosts
+
+  - name: add java repo (mesos depends on it)
+    apt_repository:
+       repo: ppa:webupd8team/java
+       state: present
+
+  - name: setup apt to accept licence quietly
+    shell: echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
+
+  - name: install java
+    apt: name={{item}} state=installed update_cache=yes
+    with_items:
+       - oracle-java8-installer
+       - oracle-java8-set-default
+
+  - name: add mesos apt key
+    apt_key:
+       keyserver: hkp://keyserver.ubuntu.com:80
+       id: E56151BF
+       state: present
+
+  - name: create mesosphere apt sources file
+    template:
+       src: ~/ansible/templates/mesosphere_sources.j2
+       dest: /etc/apt/sources.list.d/mesosphere.list
+
+  - name: install mesosphere
+    apt:
+       name: mesosphere
+       state: installed
+       update_cache: yes
+
+  - name: create /etc/zookeeper/conf/myid
+    template:
+      src: ~/ansible/templates/master_etc_zookeeper_conf_myid.j2
+      dest: /etc/zookeeper/conf/myid
+
+  - name: create /etc/mesos/zk
+    copy:
+      src: ~/ansible/templates/master_etc_mesos_zk
+      dest: /etc/mesos/zk
+
+  - name: create /etc/zookeeper/conf/zoo.cfg
+    assemble:
+      src: ~/ansible/templates/zoo_cfg_fragments
+      dest: /etc/zookeeper/conf/zoo.cfg
+      remote_src: false
+
+  - name: create /etc/mesos-master/quorum
+    copy:
+      src: ~/ansible/templates/master_etc_mesos_master_quorum
+      dest: /etc/mesos-master/quorum
+
+  - name: create /etc/mesos-master/ip
+    template:
+      src: ~/ansible/templates/master_etc_mesos_master_ip.j2
+      dest: /etc/mesos-master/ip
+
+  - name: create /etc/mesos-master/hostname
+    template:
+      src: ~/ansible/templates/master_etc_mesos_master_ip.j2
+      dest: /etc/mesos-master/hostname
+
+  - name: create directory /etc/marathon/conf
+    file:
+      path: /etc/marathon/conf
+      state: directory
+
+  - name: create /etc/marathon/conf
+    template:
+      src: ~/ansible/templates/master_etc_mesos_master_ip.j2
+      dest: /etc/marathon/conf/hostname
+
+  - name: create /etc/marathon/conf/master
+    copy:
+      src: ~/ansible/templates/master_etc_mesos_zk
+      dest: /etc/marathon/conf/master
+
+  - name: create /etc/marathon/conf/zk
+    copy:
+      src: ~/ansible/templates/master_etc_marathon_conf_zk
+      dest: /etc/marathon/conf/zk
+
+  - name: stop & disable mesos-slave service
+    service:
+       name: mesos-slave
+       state: stopped
+       enabled: false
+
+  - name: restart zookeeper
+    service:
+       name: zookeeper
+       state: restarted
+
+  - name: restart mesos-master
+    service:
+       name: mesos-master
+       state: restarted
+
+  - name: restart marathon
+    service:
+       name: marathon
+       state: restarted

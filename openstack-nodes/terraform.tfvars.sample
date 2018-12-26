@@ -1,0 +1,5 @@
+flavor-name       = "[Enter the name of the instance flavor to use for the nodes]"
+ao-host-ip        = "[Enter an external IP address from which SSH to nodes will be allowed. SSH to the nodes will only be allowed from this IP.]"
+public-net-name   = "[Enter the name of the public/external network to which the private network will be uplinked]"
+public-net-id     = "[Enter the UUID of the above mentioned public/external network]"
+public-key-file   = "[Enter path (on the local machine) to the public key to be inserted into the nodes]"

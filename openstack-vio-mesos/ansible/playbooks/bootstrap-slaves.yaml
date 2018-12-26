@@ -1,0 +1,69 @@
+---
+- hosts: localhost
+
+- hosts: slaves
+  #strategy: free
+  remote_user: ubuntu
+  become: true
+  tasks:
+  - name: update /etc/hosts
+    template:
+       src: ~/ansible/templates/etc_hosts.j2
+       dest: /etc/hosts
+
+  - name: add java repo (mesos depends on it)
+    apt_repository:
+       repo: ppa:webupd8team/java
+       state: present
+
+  - name: setup apt to accept licence quietly
+    shell: echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
+
+  - name: install java
+    apt: name={{item}} state=installed update_cache=yes
+    with_items:
+       - oracle-java8-installer
+       - oracle-java8-set-default
+
+  - name: add mesos apt key
+    apt_key:
+       keyserver: hkp://keyserver.ubuntu.com:80
+       id: E56151BF
+       state: present
+
+  - name: create mesosphere apt sources file
+    template:
+       src: ~/ansible/templates/mesosphere_sources.j2
+       dest: /etc/apt/sources.list.d/mesosphere.list
+
+  - name: install mesos
+    apt:
+       name: mesos
+       state: installed
+       update_cache: yes
+
+  - name: stop & disable zookeeper & mesos-master services
+    service: name={{item}} state=stopped enabled=false
+    with_items:
+       - zookeeper
+       - mesos-master
+
+  - name: create /etc/mesos/zk
+    copy:
+      src: ~/ansible/templates/master_etc_mesos_zk
+      dest: /etc/mesos/zk
+
+  - name: create /etc/mesos-slave/ip
+    template:
+      src: ~/ansible/templates/slave_etc_mesos_slave_ip.j2
+      dest: /etc/mesos-slave/ip
+
+  - name: create /etc/mesos-slave/hostname
+    template:
+      src: ~/ansible/templates/slave_etc_mesos_slave_ip.j2
+      dest: /etc/mesos-slave/hostname
+
+  - name: restart mesos-slave
+    service:
+       name: mesos-slave
+       state: restarted

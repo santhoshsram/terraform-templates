@@ -1,0 +1,11 @@
+tenant-id         = "[Insert Azure tenant ID]"
+client-id         = "[Insert Azure client ID]"
+client-secret     = "[Insert Azure client secret]"
+subscription-id   = "[Insert Azure subscription ID]"
+ao-host-ip        = "[Enter an external IP address from which SSH to nodes will be allowed. SSH to the nodes will only be allowed from this IP.]"
+res-grp-name      = "[Enter name of the resource group in which the nodes will be created]"
+public-key-file   = "[Enter path (on the local machine) to the public key to be inserted into the nodes]"
+node-count        =  [Enter  number of nodes to create]
+data-disk-size-gb = 100
+vm-size           = "[Enter VM size to use for the nodes]"
+#vm-size           = "Standard_D4_v3" # 4vcpu 16GB
